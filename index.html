@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5ef">
+  <title>Goodground — Daily sustainability tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f4f5ef;
+      --white: #fffefa;
+      --ink: #202b23;
+      --muted: #7b8379;
+      --line: #e6e9df;
+      --green: #356d4d;
+      --green-dark: #214a35;
+      --mint: #e4eee4;
+      --lime: #d9e976;
+      --coral: #dd765d;
+      --blue: #7294a5;
+      --shadow: 0 12px 36px rgba(39, 59, 43, .055);
+      font-family: "DM Sans", sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); min-height: 100vh; }
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 236px minmax(0, 1fr); max-width: 1600px; margin: 0 auto; }
+    .sidebar { display: flex; flex-direction: column; padding: 30px 20px 22px; border-right: 1px solid var(--line); background: rgba(255, 254, 250, .54); }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 10px; color: var(--green-dark); font-family: Manrope, sans-serif; font-size: 16px; font-weight: 800; }
+    .brand-mark { display: grid; place-items: center; width: 31px; height: 31px; border-radius: 10px 10px 10px 3px; background: var(--green); color: white; font-size: 15px; transform: rotate(-5deg); }
+    .nav-label { margin: 51px 10px 12px; color: #a0a69c; font-size: 10px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border: 0; border-radius: 7px; background: transparent; color: #687268; text-align: left; font-size: 13px; }
+    .nav-item.active { background: var(--mint); color: var(--green-dark); font-weight: 700; }
+    .nav-icon { width: 19px; color: var(--green); text-align: center; font-size: 15px; }
+    .side-bottom { margin-top: auto; padding: 17px 10px 0; border-top: 1px solid var(--line); }
+    .side-bottom p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .side-bottom strong { display: block; margin-bottom: 4px; color: var(--ink); font-size: 12px; }
+    main { min-width: 0; padding: 30px clamp(24px, 5vw, 74px) 52px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 38px; }
+    .breadcrumb { color: var(--muted); font-size: 12px; }
+    .profile { display: flex; align-items: center; gap: 10px; color: #555f55; font-size: 12px; }
+    .avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #e9d9c8; color: #72563e; font-size: 11px; font-weight: 700; }
+    .heading-row { display: flex; justify-content: space-between; align-items: end; gap: 18px; margin-bottom: 25px; }
+    .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 8px; font-family: Manrope, sans-serif; font-size: clamp(26px, 3vw, 35px); letter-spacing: 0; line-height: 1.15; }
+    .subheading { margin: 0; color: var(--muted); font-size: 13px; }
+    .date-pill { flex: none; padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px; background: var(--white); color: #667064; font-size: 11px; }
+    .summary-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 14px; margin-bottom: 31px; }
+    .summary { min-height: 133px; padding: 19px 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); box-shadow: var(--shadow); }
+    .summary.primary { position: relative; overflow: hidden; border-color: var(--green-dark); background: var(--green-dark); color: white; }
+    .summary.primary::after { position: absolute; content: ""; width: 130px; height: 130px; right: -30px; bottom: -77px; border: 1px solid rgba(217, 233, 118, .32); border-radius: 50%; box-shadow: 0 0 0 18px rgba(217, 233, 118, .05), 0 0 0 38px rgba(217, 233, 118, .035); }
+    .summary-label { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 11px; }
+    .primary .summary-label { color: #c8d7c8; }
+    .metric { display: flex; align-items: baseline; gap: 7px; margin: 13px 0 11px; font-family: Manrope, sans-serif; font-size: 31px; font-weight: 700; line-height: 1; }
+    .metric small { color: var(--muted); font-family: "DM Sans", sans-serif; font-size: 12px; font-weight: 500; }
+    .primary .metric small { color: #c8d7c8; }
+    .progress-track { height: 5px; overflow: hidden; border-radius: 8px; background: rgba(255,255,255,.18); }
+    .progress-fill { width: 0; height: 100%; border-radius: inherit; background: var(--lime); transition: width .35s ease; }
+    .summary-note { margin: 9px 0 0; color: var(--muted); font-size: 10px; }
+    .primary .summary-note { color: #c8d7c8; }
+    .metric .unit { font-size: 13px; font-weight: 600; }
+    .content-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(245px, .85fr); gap: 25px; align-items: start; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .section-heading h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 17px; }
+    .section-heading span { color: var(--muted); font-size: 11px; }
+    .filters { display: flex; gap: 5px; margin-bottom: 12px; overflow-x: auto; }
+    .filter { padding: 7px 11px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; white-space: nowrap; }
+    .filter.active { border-color: var(--line); background: var(--white); color: var(--green-dark); font-weight: 700; }
+    .activity-list { display: grid; gap: 8px; }
+    .activity { display: grid; grid-template-columns: 39px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 7px; background: var(--white); transition: border-color .18s, transform .18s, opacity .18s; }
+    .activity:hover { border-color: #c9d5c8; transform: translateY(-1px); }
+    .activity.done { background: #f7faf4; }
+    .activity-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 6px; background: #edf2e8; color: var(--green); font-size: 16px; }
+    .activity[data-category="Travel"] .activity-mark { background: #e9f0f2; color: #527889; }
+    .activity[data-category="Food"] .activity-mark { background: #f8eee6; color: #c27650; }
+    .activity[data-category="Shopping"] .activity-mark { background: #f0edf5; color: #81709b; }
+    .activity-name { margin: 0 0 4px; font-size: 12px; font-weight: 700; }
+    .activity-meta { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--muted); font-size: 10px; }
+    .activity-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #b1b9ae; }
+    .log-button { min-width: 68px; padding: 7px 9px; border: 1px solid #d9e3d6; border-radius: 5px; background: transparent; color: var(--green); font-size: 10px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s; }
+    .log-button:hover { background: var(--mint); }
+    .activity.done .log-button { border-color: var(--green); background: var(--green); color: white; }
+    .add-button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--white); color: var(--green-dark); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .add-button:hover { border-color: #b9c9b8; }
+    .right-column { display: grid; gap: 14px; }
+    .panel { padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--white); box-shadow: var(--shadow); }
+    .panel h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 14px; }
+    .panel-sub { margin: 5px 0 0; color: var(--muted); font-size: 10px; }
+    .week-chart { display: grid; grid-template-columns: repeat(7, 1fr); align-items: end; gap: 8px; height: 111px; margin-top: 17px; padding-top: 7px; border-bottom: 1px solid var(--line); }
+    .day-column { display: flex; height: 100%; flex-direction: column; justify-content: end; align-items: center; gap: 7px; }
+    .day-bar-wrap { display: flex; flex: 1; width: 100%; align-items: end; justify-content: center; }
+    .day-bar { width: min(20px, 100%); min-height: 3px; border-radius: 3px 3px 0 0; background: #dce9d9; transition: height .25s ease; }
+    .day-column.today .day-bar { background: var(--green); }
+    .day-label { margin-bottom: -17px; color: #9ba398; font-size: 9px; }
+    .week-chart { margin-bottom: 17px; }
+    .impact-line { display: flex; justify-content: space-between; margin-top: 14px; color: var(--muted); font-size: 10px; }
+    .impact-line strong { color: var(--green-dark); }
+    .streak-panel { display: flex; align-items: center; gap: 14px; background: #edf1e4; }
+    .streak-icon { display: grid; place-items: center; flex: none; width: 39px; height: 39px; border-radius: 50%; background: var(--lime); color: #43552e; font-size: 18px; }
+    .streak-panel h2 { margin-bottom: 4px; }
+    .streak-panel p { margin: 0; color: #6b7764; font-size: 10px; }
+    .streak-count { margin-left: auto; color: var(--green-dark); font-family: Manrope, sans-serif; font-size: 24px; font-weight: 700; }
+    .toast { position: fixed; right: 22px; bottom: 22px; z-index: 5; padding: 12px 16px; border-radius: 6px; background: var(--green-dark); color: white; font-size: 12px; box-shadow: var(--shadow); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .2s, transform .2s; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    dialog { width: min(410px, calc(100% - 32px)); padding: 0; border: 1px solid var(--line); border-radius: 9px; background: var(--white); color: var(--ink); box-shadow: 0 20px 70px rgba(25, 43, 29, .2); }
+    dialog::backdrop { background: rgba(28, 42, 30, .28); backdrop-filter: blur(2px); }
+    .dialog-inner { padding: 23px; }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 19px; }
+    .dialog-head h2 { margin: 0; font-family: Manrope, sans-serif; font-size: 18px; }
+    .close-button { width: 30px; height: 30px; border: 0; border-radius: 5px; background: #f0f2eb; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .field { display: grid; gap: 7px; margin-bottom: 14px; }
+    .field label { color: #697367; font-size: 11px; font-weight: 700; }
+    .field input, .field select { width: 100%; height: 39px; padding: 0 10px; border: 1px solid var(--line); border-radius: 5px; outline: none; background: white; color: var(--ink); font-size: 12px; }
+    .field input:focus, .field select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(53, 109, 77, .1); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-actions { display: flex; justify-content: end; gap: 8px; margin-top: 20px; }
+    .cancel-button, .save-button { padding: 9px 13px; border: 1px solid var(--line); border-radius: 5px; background: white; font-size: 11px; font-weight: 700; cursor: pointer; }
+    .save-button { border-color: var(--green); background: var(--green); color: white; }
+    .empty-state { padding: 20px 14px; border: 1px dashed #d8dfd4; border-radius: 7px; color: var(--muted); text-align: center; font-size: 11px; }
+    @media (max-width: 850px) {
+      .app-shell { grid-template-columns: 68px minmax(0, 1fr); }
+      .sidebar { align-items: center; padding: 25px 9px 18px; }
+      .brand { padding: 0; }
+      .brand-name, .nav-label, .nav-item span:last-child, .side-bottom { display: none; }
+      .nav-item { justify-content: center; margin-top: 13px; padding: 12px 0; }
+      .nav-icon { font-size: 17px; }
+      .nav-label { visibility: hidden; }
+      .summary-grid { grid-template-columns: 1.3fr 1fr; }
+      .summary:last-child { grid-column: 1 / -1; min-height: 112px; }
+      .content-grid { grid-template-columns: 1fr; }
+      .right-column { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 560px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: sticky; top: 0; z-index: 3; flex-direction: row; justify-content: space-between; height: 59px; padding: 0 17px; border-right: 0; border-bottom: 1px solid var(--line); background: rgba(255,254,250,.96); }
+      .brand { gap: 8px; }
+      .brand-name { display: inline; font-size: 14px; }
+      .nav-label, .side-bottom { display: none; }
+      .sidebar nav { display: flex; gap: 3px; }
+      .nav-item { width: 38px; height: 38px; margin: 0; padding: 0; }
+      .nav-icon { font-size: 15px; }
+      main { padding: 20px 16px 36px; }
+      .topbar { margin-bottom: 27px; }
+      .profile > span:first-child { display: none; }
+      .heading-row { align-items: start; }
+      .date-pill { margin-top: 3px; font-size: 10px; }
+      .summary-grid { gap: 8px; margin-bottom: 26px; }
+      .summary { min-height: 119px; padding: 14px; }
+      .summary.primary { grid-column: 1 / -1; min-height: 133px; }
+      .summary:nth-child(2), .summary:last-child { grid-column: auto; }
+      .metric { font-size: 27px; }
+      .summary-label { font-size: 10px; }
+      .content-grid { gap: 24px; }
+      .right-column { grid-template-columns: 1fr; }
+      .activity { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 9px; padding: 10px; }
+      .activity-mark { width: 35px; height: 35px; }
+      .log-button { min-width: 58px; padding: 7px 6px; }
+      .section-heading h2 { font-size: 16px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">g</span><span class="brand-name">goodground</span></div>
+      <nav aria-label="Sections">
+        <p class="nav-label">Workspace</p>
+        <button class="nav-item active" type="button" aria-current="page"><span class="nav-icon" aria-hidden="true">◷</span><span>Daily tracker</span></button>
+        <button class="nav-item" type="button" title="Coming soon"><span class="nav-icon" aria-hidden="true">▥</span><span>My impact</span></button>
+      </nav>
+      <div class="side-bottom"><strong>Small steps add up.</strong><p>Make thoughtful choices feel like part of your everyday.</p></div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <span class="breadcrumb">Workspace <span aria-hidden="true">/</span> Daily tracker</span>
+        <div class="profile"><span>Personal space</span><span class="avatar" aria-label="Profile initials">Y</span></div>
+      </header>
+
+      <section class="heading-row" aria-labelledby="page-title">
+        <div><p class="eyebrow">Your everyday, a little greener</p><h1 id="page-title">Daily tracker</h1><p class="subheading">A few mindful choices make a meaningful difference.</p></div>
+        <div class="date-pill" id="today-date"></div>
+      </section>
+
+      <section class="summary-grid" aria-label="Today's summary">
+        <article class="summary primary">
+          <div class="summary-label"><span>Daily actions</span><span id="progress-caption">0 of 5</span></div>
+          <div class="metric"><span id="actions-count">0</span><small>actions logged</small></div>
+          <div class="progress-track" role="progressbar" aria-label="Daily action goal" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          <p class="summary-note" id="progress-note">Your first small step is ready when you are.</p>
+        </article>
+        <article class="summary">
+          <div class="summary-label"><span>Estimated CO₂ saved</span><span aria-hidden="true">↘</span></div>
+          <div class="metric"><span id="co2-count">0.0</span><small>kg</small></div>
+          <p class="summary-note">Based on actions logged today</p>
+        </article>
+        <article class="summary">
+          <div class="summary-label"><span>Current streak</span><span aria-hidden="true">✳</span></div>
+          <div class="metric"><span id="streak-count">0</span><small>days</small></div>
+          <p class="summary-note">A little consistency goes a long way</p>
+        </article>
+      </section>
+
+      <div class="content-grid">
+        <section aria-labelledby="actions-title">
+          <div class="section-heading"><div><h2 id="actions-title">Today's actions</h2><span>Choose what fits your day</span></div><button class="add-button" id="add-action" type="button">＋ Add action</button></div>
+          <div class="filters" role="group" aria-label="Filter actions by category">
+            <button class="filter active" type="button" data-filter="All" aria-pressed="true">All actions</button>
+            <button class="filter" type="button" data-filter="Home" aria-pressed="false">Home</button>
+            <button class="filter" type="button" data-filter="Travel" aria-pressed="false">Travel</button>
+            <button class="filter" type="button" data-filter="Food" aria-pressed="false">Food</button>
+            <button class="filter" type="button" data-filter="Shopping" aria-pressed="false">Shopping</button>
+          </div>
+          <div class="activity-list" id="activity-list" aria-live="polite"></div>
+        </section>
+
+        <aside class="right-column" aria-label="Your impact">
+          <section class="panel" aria-labelledby="week-title">
+            <h2 id="week-title">This week</h2><p class="panel-sub">Actions logged each day</p>
+            <div class="week-chart" id="week-chart" role="img" aria-label="Actions logged over the last seven days"></div>
+            <div class="impact-line"><span>Weekly CO₂ saved</span><strong id="week-co2">0.0 kg</strong></div>
+          </section>
+          <section class="panel streak-panel">
+            <div class="streak-icon" aria-hidden="true">✳</div><div><h2>Keep your rhythm</h2><p id="streak-message">Log an action to start your streak.</p></div><div class="streak-count" id="streak-side">0</div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="action-dialog" aria-labelledby="dialog-title">
+    <form class="dialog-inner" id="action-form">
+      <div class="dialog-head"><h2 id="dialog-title">Add an action</h2><button class="close-button" id="close-dialog" type="button" aria-label="Close">×</button></div>
+      <div class="field"><label for="action-name">Action name</label><input id="action-name" name="name" maxlength="48" placeholder="e.g. Took my own cup" required></div>
+      <div class="form-row">
+        <div class="field"><label for="action-category">Category</label><select id="action-category" name="category"><option>Home</option><option>Travel</option><option>Food</option><option>Shopping</option></select></div>
+        <div class="field"><label for="action-impact">Estimated CO₂ (kg)</label><input id="action-impact" name="impact" type="number" min="0" max="50" step="0.1" value="0.2" required></div>
+      </div>
+      <div class="form-actions"><button class="cancel-button" id="cancel-dialog" type="button">Cancel</button><button class="save-button" type="submit">Save action</button></div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = "goodground-tracker-v1";
+      const DAILY_GOAL = 5;
+      const initialActions = [
+        { id: "lights", name: "Turned off unused lights", category: "Home", impact: 0.3, icon: "⌂" },
+        { id: "walk", name: "Walked or cycled for a short trip", category: "Travel", impact: 1.8, icon: "↗" },
+        { id: "plant", name: "Chose a plant-based meal", category: "Food", impact: 1.4, icon: "✿" },
+        { id: "reuse", name: "Used a reusable bottle or cup", category: "Shopping", impact: 0.2, icon: "◒" },
+        { id: "unplug", name: "Unplugged an unused device", category: "Home", impact: 0.2, icon: "⌁" },
+        { id: "transit", name: "Took public transit", category: "Travel", impact: 2.1, icon: "↗" },
+        { id: "local", name: "Picked a seasonal or local food", category: "Food", impact: 0.6, icon: "✿" },
+        { id: "repair", name: "Repaired or reused something", category: "Shopping", impact: 0.8, icon: "◒" }
+      ];
+      const icons = { Home: "⌂", Travel: "↗", Food: "✿", Shopping: "◒" };
+      const today = new Date();
+      const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const todayKey = dateKey(today);
+      let state;
+      try {
+        state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { actions: initialActions, days: {} };
+      } catch {
+        state = { actions: initialActions, days: {} };
+      }
+      if (!Array.isArray(state.actions)) state.actions = initialActions;
+      if (!state.days || typeof state.days !== "object") state.days = {};
+      if (!Array.isArray(state.days[todayKey])) state.days[todayKey] = [];
+
+      const list = document.getElementById("activity-list");
+      const toast = document.getElementById("toast");
+      let selectedFilter = "All";
+      let toastTimer;
+
+      function save() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+        catch { showToast("Could not save in this browser."); }
+      }
+
+      function actionsForDay(key) {
+        const done = new Set(state.days[key] || []);
+        return state.actions.filter((action) => done.has(action.id));
+      }
+
+      function formatKg(value) { return Number(value).toFixed(1); }
+
+      function currentStreak() {
+        let count = 0;
+        const cursor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        while ((state.days[dateKey(cursor)] || []).length > 0) {
+          count++;
+          cursor.setDate(cursor.getDate() - 1);
+        }
+        return count;
+      }
+
+      function renderList() {
+        const visible = state.actions.filter((action) => selectedFilter === "All" || action.category === selectedFilter);
+        const completed = new Set(state.days[todayKey] || []);
+        list.innerHTML = "";
+        if (!visible.length) {
+          list.innerHTML = '<div class="empty-state">No actions in this category yet.</div>';
+          return;
+        }
+        visible.forEach((action) => {
+          const done = completed.has(action.id);
+          const row = document.createElement("article");
+          row.className = `activity${done ? " done" : ""}`;
+          row.dataset.category = action.category;
+          const mark = document.createElement("span");
+          mark.className = "activity-mark";
+          mark.setAttribute("aria-hidden", "true");
+          mark.textContent = action.icon || icons[action.category] || "✳";
+          const details = document.createElement("div");
+          const name = document.createElement("h3");
+          name.className = "activity-name";
+          name.textContent = action.name;
+          const meta = document.createElement("p");
+          meta.className = "activity-meta";
+          meta.innerHTML = `<span>${action.category}</span><span class="dot" aria-hidden="true"></span><span>~${formatKg(action.impact)} kg CO₂</span>`;
+          details.append(name, meta);
+          const button = document.createElement("button");
+          button.className = "log-button";
+          button.type = "button";
+          button.textContent = done ? "Logged ✓" : "＋ Log";
+          button.setAttribute("aria-pressed", String(done));
+          button.setAttribute("aria-label", `${done ? "Remove" : "Log"} ${action.name}`);
+          button.addEventListener("click", () => toggleAction(action.id));
+          row.append(mark, details, button);
+          list.append(row);
+        });
+      }
+
+      function renderWeek() {
+        const chart = document.getElementById("week-chart");
+        chart.innerHTML = "";
+        const days = [];
+        for (let offset = 6; offset >= 0; offset--) {
+          const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - offset);
+          const key = dateKey(date);
+          const done = actionsForDay(key);
+          days.push({ date, key, count: done.length, impact: done.reduce((sum, action) => sum + Number(action.impact || 0), 0) });
+        }
+        const max = Math.max(3, ...days.map((day) => day.count));
+        days.forEach((day) => {
+          const column = document.createElement("div");
+          column.className = `day-column${day.key === todayKey ? " today" : ""}`;
+          column.setAttribute("aria-label", `${day.date.toLocaleDateString(undefined, { weekday: "long" })}: ${day.count} actions`);
+          const wrap = document.createElement("div");
+          wrap.className = "day-bar-wrap";
+          const bar = document.createElement("div");
+          bar.className = "day-bar";
+          bar.style.height = `${Math.max(3, (day.count / max) * 76)}%`;
+          bar.title = `${day.count} action${day.count === 1 ? "" : "s"}`;
+          const label = document.createElement("span");
+          label.className = "day-label";
+          label.textContent = day.date.toLocaleDateString(undefined, { weekday: "narrow" });
+          wrap.append(bar);
+          column.append(wrap, label);
+          chart.append(column);
+        });
+        document.getElementById("week-co2").textContent = `${formatKg(days.reduce((sum, day) => sum + day.impact, 0))} kg`;
+      }
+
+      function render() {
+        const done = actionsForDay(todayKey);
+        const count = done.length;
+        const impact = done.reduce((sum, action) => sum + Number(action.impact || 0), 0);
+        const streak = currentStreak();
+        const percent = Math.min(100, (count / DAILY_GOAL) * 100);
+        document.getElementById("actions-count").textContent = count;
+        document.getElementById("progress-caption").textContent = `${count} of ${DAILY_GOAL}`;
+        document.getElementById("progress-fill").style.width = `${percent}%`;
+        document.getElementById("progress-bar").setAttribute("aria-valuenow", Math.min(count, DAILY_GOAL));
+        document.getElementById("progress-bar").setAttribute("aria-valuemax", DAILY_GOAL);
+        document.getElementById("progress-note").textContent = count >= DAILY_GOAL ? "Daily goal reached. That's something to feel good about." : `${DAILY_GOAL - count} more to reach today's goal`;
+        document.getElementById("co2-count").textContent = formatKg(impact);
+        document.getElementById("streak-count").textContent = streak;
+        document.getElementById("streak-side").textContent = streak;
+        document.getElementById("streak-message").textContent = streak ? `${streak} day${streak === 1 ? "" : "s"} of thoughtful choices.` : "Log an action to start your streak.";
+        renderList();
+        renderWeek();
+      }
+
+      function toggleAction(id) {
+        const done = new Set(state.days[todayKey] || []);
+        if (done.has(id)) {
+          done.delete(id);
+        } else {
+          done.add(id);
+          const action = state.actions.find((item) => item.id === id);
+          showToast(`${action ? action.name : "Action"} logged`);
+        }
+        state.days[todayKey] = [...done];
+        save();
+        render();
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
+      }
+
+      document.querySelectorAll(".filter").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedFilter = button.dataset.filter;
+          document.querySelectorAll(".filter").forEach((filter) => {
+            const active = filter === button;
+            filter.classList.toggle("active", active);
+            filter.setAttribute("aria-pressed", String(active));
+          });
+          renderList();
+        });
+      });
+
+      const dialog = document.getElementById("action-dialog");
+      document.getElementById("add-action").addEventListener("click", () => dialog.showModal());
+      document.getElementById("close-dialog").addEventListener("click", () => dialog.close());
+      document.getElementById("cancel-dialog").addEventListener("click", () => dialog.close());
+      dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+      document.getElementById("action-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const form = new FormData(event.currentTarget);
+        const name = String(form.get("name")).trim();
+        const impact = Number(form.get("impact"));
+        if (!name || !Number.isFinite(impact) || impact < 0 || impact > 50) return;
+        const id = `custom-${Date.now()}`;
+        state.actions.push({ id, name, category: String(form.get("category")), impact, icon: icons[String(form.get("category"))] });
+        save();
+        dialog.close();
+        event.currentTarget.reset();
+        document.getElementById("action-impact").value = "0.2";
+        selectedFilter = "All";
+        document.querySelectorAll(".filter").forEach((button) => {
+          const active = button.dataset.filter === "All";
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        render();
+        showToast("Action added to your list");
+      });
+
+      document.getElementById("today-date").textContent = today.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+      render();
+    })();
+  </script>
+</body>
+</html>
